@@ -1,0 +1,382 @@
+/* Custom styles for MiniGitHub */
+
+:root {
+    --github-bg: #0d1117;
+    --github-border: #21262d;
+    --github-text: #e6edf3;
+    --github-text-secondary: #7d8590;
+    --github-accent: #238636;
+    --github-accent-hover: #2ea043;
+    --github-danger: #da3633;
+    --github-warning: #d29922;
+    --github-link: #58a6ff;
+    --github-card-bg: #161b22;
+    --github-input-bg: #0d1117;
+    --github-input-border: #30363d;
+}
+
+body {
+    background-color: var(--github-bg);
+    color: var(--github-text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+}
+
+/* Navbar customization */
+.navbar-dark {
+    background-color: var(--github-card-bg) !important;
+    border-bottom: 1px solid var(--github-border);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+/* Cards and containers */
+.card {
+    background-color: var(--github-card-bg);
+    border: 1px solid var(--github-border);
+    border-radius: 6px;
+}
+
+.card-header {
+    background-color: var(--github-card-bg);
+    border-bottom: 1px solid var(--github-border);
+    font-weight: 600;
+}
+
+/* Buttons */
+.btn-success {
+    background-color: var(--github-accent);
+    border-color: var(--github-accent);
+}
+
+.btn-success:hover {
+    background-color: var(--github-accent-hover);
+    border-color: var(--github-accent-hover);
+}
+
+.btn-outline-success {
+    color: var(--github-accent);
+    border-color: var(--github-accent);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--github-accent);
+    border-color: var(--github-accent);
+}
+
+.btn-danger {
+    background-color: var(--github-danger);
+    border-color: var(--github-danger);
+}
+
+/* Forms */
+.form-control {
+    background-color: var(--github-input-bg);
+    border: 1px solid var(--github-input-border);
+    color: var(--github-text);
+}
+
+.form-control:focus {
+    background-color: var(--github-input-bg);
+    border-color: var(--github-link);
+    color: var(--github-text);
+    box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+}
+
+.form-select {
+    background-color: var(--github-input-bg);
+    border: 1px solid var(--github-input-border);
+    color: var(--github-text);
+}
+
+/* Links */
+a {
+    color: var(--github-link);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--github-link);
+    text-decoration: underline;
+}
+
+/* Repository cards */
+.repo-card {
+    transition: border-color 0.2s;
+}
+
+.repo-card:hover {
+    border-color: var(--github-link);
+}
+
+.repo-name {
+    font-weight: 600;
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+}
+
+.repo-description {
+    color: var(--github-text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.repo-meta {
+    font-size: 0.75rem;
+    color: var(--github-text-secondary);
+}
+
+.repo-meta .badge {
+    background-color: var(--github-border);
+    color: var(--github-text);
+}
+
+/* File tree */
+.file-tree {
+    background-color: var(--github-card-bg);
+    border: 1px solid var(--github-border);
+    border-radius: 6px;
+}
+
+.file-item {
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--github-border);
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.file-item:hover {
+    background-color: rgba(177, 186, 196, 0.12);
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.file-icon {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+}
+
+.file-name {
+    flex: 1;
+    color: var(--github-link);
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.875rem;
+}
+
+.file-message {
+    color: var(--github-text-secondary);
+    font-size: 0.875rem;
+    margin-right: 16px;
+}
+
+.file-date {
+    color: var(--github-text-secondary);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+/* Code display */
+.code-container {
+    border: 1px solid var(--github-border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.code-header {
+    background-color: var(--github-card-bg);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--github-border);
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.code-content {
+    background-color: var(--github-input-bg);
+    overflow-x: auto;
+}
+
+.code-content pre {
+    margin: 0;
+    padding: 16px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--github-text);
+}
+
+/* Commit history */
+.commit-item {
+    padding: 16px;
+    border-bottom: 1px solid var(--github-border);
+}
+
+.commit-item:last-child {
+    border-bottom: none;
+}
+
+.commit-message {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.commit-meta {
+    font-size: 0.875rem;
+    color: var(--github-text-secondary);
+}
+
+.commit-hash {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.75rem;
+    background-color: var(--github-border);
+    color: var(--github-text);
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-decoration: none;
+}
+
+.commit-hash:hover {
+    background-color: var(--github-text-secondary);
+    text-decoration: none;
+}
+
+/* Breadcrumbs */
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-item {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.875rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    color: var(--github-text-secondary);
+}
+
+/* Alerts */
+.alert-success {
+    background-color: rgba(35, 134, 54, 0.15);
+    border-color: var(--github-accent);
+    color: #3fb950;
+}
+
+.alert-danger {
+    background-color: rgba(218, 54, 51, 0.15);
+    border-color: var(--github-danger);
+    color: #f85149;
+}
+
+.alert-warning {
+    background-color: rgba(210, 153, 34, 0.15);
+    border-color: var(--github-warning);
+    color: #f0883e;
+}
+
+/* Upload area */
+.upload-area {
+    border: 2px dashed var(--github-border);
+    border-radius: 6px;
+    padding: 3rem;
+    text-align: center;
+    transition: border-color 0.2s;
+}
+
+.upload-area:hover {
+    border-color: var(--github-link);
+}
+
+.upload-area.dragover {
+    border-color: var(--github-accent);
+    background-color: rgba(35, 134, 54, 0.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .file-message,
+    .file-date {
+        margin-top: 4px;
+        margin-right: 0;
+    }
+    
+    .repo-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Syntax highlighting overrides */
+.hljs {
+    background: var(--github-input-bg) !important;
+    color: var(--github-text) !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--github-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--github-border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--github-text-secondary);
+}
+
+/* Loading spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Badge customization */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-private {
+    background-color: var(--github-warning);
+    color: #000;
+}
+
+.badge-public {
+    background-color: var(--github-accent);
+    color: #fff;
+}
+
+/* Table customization */
+.table-dark {
+    --bs-table-bg: var(--github-card-bg);
+    --bs-table-border-color: var(--github-border);
+}
+
+/* Footer */
+.footer {
+    margin-top: 3rem;
+    padding: 2rem 0;
+    border-top: 1px solid var(--github-border);
+    color: var(--github-text-secondary);
+    font-size: 0.875rem;
+}
