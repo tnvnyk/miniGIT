@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}MiniGitHub - Git Repository Hosting{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fab fa-github me-3"></i>MiniGitHub
+                </h1>
+                <p class="lead text-muted mb-4">
+                    A simple, elegant Git repository hosting platform built with Flask
+                </p>
+                {% if not current_user.is_authenticated %}
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Sign up for free
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign in
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                    </a>
+                    <a href="{{ url_for('create') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-plus me-2"></i>New Repository
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <!-- Quick Stats -->
+    <div class="row mb-5">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="card-title text-success">{{ user_stats.total_repos or 0 }}</h3>
+                    <p class="card-text text-muted">Repositories</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="card-title text-info">{{ user_stats.total_commits or 0 }}</h3>
+                    <p class="card-text text-muted">Commits</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="card-title text-warning">{{ user_stats.public_repos or 0 }}</h3>
+                    <p class="card-text text-muted">Public Repos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="card-title text-secondary">{{ user_stats.private_repos or 0 }}</h3>
+                    <p class="card-text text-muted">Private Repos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Repositories -->
+    {% if recent_repos %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>
+                    <i class="fas fa-history me-2"></i>Recent Repositories
+                </h3>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-sm">
+                    View all repositories <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="row">
+                {% for repo in recent_repos %}
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="card repo-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="repo-name mb-0">
+                                    <a href="{{ url_for('view', username=repo.owner.username, repo_name=repo.name) }}">
+                                        {{ repo.name }}
+                                    </a>
+                                </h5>
+                                <span class="badge badge-{{ 'private' if repo.is_private else 'public' }}">
+                                    <i class="fas fa-{{ 'lock' if repo.is_private else 'globe' }} me-1"></i>
+                                    {{ 'Private' if repo.is_private else 'Public' }}
+                                </span>
+                            </div>
+                            {% if repo.description %}
+                            <p class="repo-description">{{ repo.description }}</p>
+                            {% endif %}
+                            <div class="repo-meta mt-auto">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Updated {{ moment(repo.updated_at).fromNow() }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">
+                <i class="fas fa-star me-2"></i>Features
+            </h3>
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-code-branch fa-3x text-success"></i>
+                            </div>
+                            <h5 class="card-title">Git Integration</h5>
+                            <p class="card-text text-muted">
+                                Full Git repository support with commit history, branching, and file management.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-file-code fa-3x text-info"></i>
+                            </div>
+                            <h5 class="card-title">Syntax Highlighting</h5>
+                            <p class="card-text text-muted">
+                                Beautiful code syntax highlighting for multiple programming languages.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-upload fa-3x text-warning"></i>
+                            </div>
+                            <h5 class="card-title">File Upload</h5>
+                            <p class="card-text text-muted">
+                                Easy drag-and-drop file uploads with automatic Git commits.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fab fa-markdown fa-3x text-primary"></i>
+                            </div>
+                            <h5 class="card-title">Markdown Support</h5>
+                            <p class="card-text text-muted">
+                                Rich README rendering with full Markdown support.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-users fa-3x text-danger"></i>
+                            </div>
+                            <h5 class="card-title">User Management</h5>
+                            <p class="card-text text-muted">
+                                Secure user authentication with public and private repositories.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-history fa-3x text-secondary"></i>
+                            </div>
+                            <h5 class="card-title">Commit History</h5>
+                            <p class="card-text text-muted">
+                                Complete commit history with diffs and detailed information.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Getting Started Section -->
+    {% if not current_user.is_authenticated %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-rocket me-2"></i>Get Started
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <span class="badge bg-success rounded-circle p-3">1</span>
+                                </div>
+                                <h6>Create Account</h6>
+                                <p class="text-muted small">Sign up for free and get started in seconds</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <span class="badge bg-success rounded-circle p-3">2</span>
+                                </div>
+                                <h6>Create Repository</h6>
+                                <p class="text-muted small">Initialize your first Git repository</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <span class="badge bg-success rounded-circle p-3">3</span>
+                                </div>
+                                <h6>Upload Files</h6>
+                                <p class="text-muted small">Start uploading and managing your code</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="row">
+        <div class="col-12">
+            <div class="footer text-center">
+                <p class="mb-0">
+                    <strong>MiniGitHub</strong> - Built with ❤️ using Flask, PostgreSQL, and Bootstrap
+                </p>
+                <p class="mb-0">
+                    <small>© 2025 MiniGitHub. A minimal Git hosting platform.</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

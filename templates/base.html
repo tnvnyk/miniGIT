@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MiniGitHub{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Highlight.js for syntax highlighting -->
+    <link href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/github.min.css" rel="stylesheet">
+    {{moment.include_moment() }}
+    <style>
+        :root {
+            --minigit-primary: #0d6efd;
+            --minigit-secondary: #6c757d;
+            --minigit-success: #198754;
+            --minigit-danger: #dc3545;
+            --minigit-warning: #ffc107;
+            --minigit-info: #0dcaf0;
+            --minigit-dark: #212529;
+            --minigit-light: #f8f9fa;
+        }
+        
+        body {
+            background-color: #f6f8fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #24292f 0%, #1c2128 100%);
+            border-bottom: 1px solid #30363d;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .card {
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2da44e 0%, #0969da 100%);
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2c974b 0%, #0860ca 100%);
+        }
+        
+        .file-tree {
+            background-color: #fff;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+        }
+        
+        .file-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f6f8fa;
+            transition: background-color 0.2s ease;
+        }
+        
+        .file-item:hover {
+            background-color: #f6f8fa;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .code-container {
+            background-color: #f6f8fa;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .code-header {
+            background-color: #f6f8fa;
+            border-bottom: 1px solid #d0d7de;
+            padding: 12px 16px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .code-content {
+            padding: 0;
+            margin: 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .search-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f6f8fa;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .search-item:hover {
+            background-color: #f6f8fa;
+        }
+        
+        .commit-message {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+        }
+        
+        .diff-addition {
+            background-color: #ccffd8;
+            color: #1a7f37;
+        }
+        
+        .diff-deletion {
+            background-color: #ffd7d5;
+            color: #cf222e;
+        }
+        
+        .avatar {
+            border-radius: 50%;
+            border: 2px solid #d0d7de;
+        }
+        
+        .repo-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .repo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .activity-item {
+            border-left: 3px solid var(--minigit-primary);
+            padding-left: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-open {
+            background-color: #dafbe1;
+            color: #1a7f37;
+        }
+        
+        .status-closed {
+            background-color: #ffd8e2;
+            color: #cf222e;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="bi bi-github"></i> MiniGitHub
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Search -->
+                <div class="mx-auto position-relative" style="width: 300px;">
+                    <input type="text" class="form-control" id="globalSearch" placeholder="Search repositories...">
+                    <div id="searchDropdown" class="search-dropdown" style="display: none;"></div>
+                </div>
+                
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('create') }}">
+                                <i class="bi bi-plus-circle"></i> New
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">
+                                <i class="bi bi-house"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> {{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Your repositories</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Sign in</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">Sign up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0">&copy; 2025 MiniGitHub. A GitHub clone built with Flask.</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="#" class="text-muted me-3">About</a>
+                    <a href="#" class="text-muted me-3">API</a>
+                    <a href="#" class="text-muted">Help</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Highlight.js -->
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/lib/highlight.min.js"></script>
+    
+    <script>
+        // Initialize syntax highlighting
+        hljs.highlightAll();
+        
+        // Global search functionality
+        const searchInput = document.getElementById('globalSearch');
+        const searchDropdown = document.getElementById('searchDropdown');
+        let searchTimeout;
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+                
+                if (query.length < 2) {
+                    searchDropdown.style.display = 'none';
+                    return;
+                }
+                
+                searchTimeout = setTimeout(() => {
+                    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                searchDropdown.innerHTML = data.map(repo => `
+                                    <div class="search-item" onclick="window.location.href='${repo.url}'">
+                                        <div class="fw-bold">${repo.full_name}</div>
+                                        <div class="text-muted small">${repo.description || 'No description'}</div>
+                                    </div>
+                                `).join('');
+                                searchDropdown.style.display = 'block';
+                            } else {
+                                searchDropdown.innerHTML = '<div class="search-item text-muted">No repositories found</div>';
+                                searchDropdown.style.display = 'block';
+                            }
+                        })
+                        .catch(() => {
+                            searchDropdown.style.display = 'none';
+                        });
+                }, 300);
+            });
+            
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!searchInput.contains(event.target) && !searchDropdown.contains(event.target)) {
+                    searchDropdown.style.display = 'none';
+                }
+            });
+        }
+        
+        // Auto-hide alerts
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            });
+        }, 5000);
+        
+        // File upload preview
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            const preview = document.getElementById('filePreview');
+            
+            if (preview && files.length > 0) {
+                preview.innerHTML = '';
+                Array.from(files).forEach(file => {
+                    const div = document.createElement('div');
+                    div.className = 'alert alert-info';
+                    div.innerHTML = `<i class="bi bi-file-earmark"></i> ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                    preview.appendChild(div);
+                });
+            }
+        }
+        
+        // Add file input listener if exists
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) {
+            fileInput.addEventListener('change', handleFileSelect);
+        }
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
