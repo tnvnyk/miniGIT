@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Files - {{ repo.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('view', username=repo.owner.username, repo_name=repo.name) }}">{{ repo.name }}</a></li>
+                    <li class="breadcrumb-item active">Upload Files</li>
+                </ol>
+            </nav>
+
+            <!-- Page Header -->
+            <div class="d-flex align-items-center mb-4">
+                <i class="fas fa-upload text-primary me-3" style="font-size: 2rem;"></i>
+                <div>
+                    <h1 class="h3 mb-1">Upload Files</h1>
+                    <p class="text-muted mb-0">Add files to <strong>{{ repo.name }}</strong> repository</p>
+                </div>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- File Upload Area -->
+                        <div class="mb-4">
+                            {{ form.files.label(class="form-label fw-bold") }}
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt mb-3" style="font-size: 3rem; color: #6c757d;"></i>
+                                    <h5 class="mb-2">Drag & Drop Files Here</h5>
+                                    <p class="text-muted mb-3">or click to browse your computer</p>
+                                    {{ form.files(class="form-control", id="fileInput", multiple=True, style="display: none;") }}
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                                        <i class="fas fa-folder-open me-2"></i>Choose Files
+                                    </button>
+                                </div>
+                            </div>
+                            {% if form.files.errors %}
+                                <div class="text-danger small mt-2">
+                                    {% for error in form.files.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Selected Files Display -->
+                        <div id="selectedFiles" class="mb-4" style="display: none;">
+                            <label class="form-label fw-bold">Selected Files</label>
+                            <div id="filesList" class="border rounded p-3 bg-light">
+                                <!-- Files will be listed here via JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Target Directory -->
+                        <div class="mb-4">
+                            {{ form.target_directory.label(class="form-label fw-bold") }}
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-folder"></i>
+                                </span>
+                                {{ form.target_directory(class="form-control", placeholder="Leave empty for root directory") }}
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Specify a directory path (e.g., "src/components" or "docs"). Leave empty to upload to the root directory.
+                            </div>
+                            {% if form.target_directory.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.target_directory.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Commit Message -->
+                        <div class="mb-4">
+                            {{ form.commit_message.label(class="form-label fw-bold") }}
+                            {{ form.commit_message(class="form-control", rows="3", placeholder="Add files via upload") }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Describe the changes you're making with these files.
+                            </div>
+                            {% if form.commit_message.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.commit_message.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Upload Options -->
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3">
+                                    <i class="fas fa-cog me-2"></i>Upload Options
+                                </h6>
+                                <div class="form-check">
+                                    {{ form.overwrite_existing(class="form-check-input") }}
+                                    {{ form.overwrite_existing.label(class="form-check-label") }}
+                                    <div class="form-text small">
+                                        If unchecked, files with the same name will be skipped.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('view', username=repo.owner.username, repo_name=repo.name) }}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <div>
+                                {{ form.submit(class="btn btn-primary px-4", id="submitBtn") }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Upload Tips -->
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Upload Tips
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>Maximum file size: <strong>10MB per file</strong></li>
+                        <li>Supported formats: All text files, images, documents, and code files</li>
+                        <li>Binary files larger than 1MB will be stored using Git LFS (if configured)</li>
+                        <li>Use descriptive commit messages to help track your changes</li>
+                        <li>You can organize files into directories by specifying the target directory</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 3rem 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #fafafa;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+    border-color: #0d6efd;
+    background: #f0f8ff;
+}
+
+.upload-area.dragover {
+    border-style: solid;
+    background: #e3f2fd;
+}
+
+.upload-content h5 {
+    color: #495057;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+}
+
+.file-icon {
+    width: 20px;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+.file-size {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.remove-file {
+    border: none;
+    background: none;
+    color: #dc3545;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 3px;
+}
+
+.remove-file:hover {
+    background: #f8d7da;
+}
+
+#submitBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const selectedFiles = document.getElementById('selectedFiles');
+    const filesList = document.getElementById('filesList');
+    const submitBtn = document.getElementById('submitBtn');
+    let filesArray = [];
+
+    // Handle drag and drop
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files);
+        handleFiles(files);
+    });
+
+    // Handle file input change
+    fileInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        handleFiles(files);
+    });
+
+    // Handle click on upload area
+    uploadArea.addEventListener('click', function(e) {
+        if (e.target === uploadArea || e.target.closest('.upload-content')) {
+            fileInput.click();
+        }
+    });
+
+    function handleFiles(files) {
+        filesArray = [...filesArray, ...files];
+        updateFilesList();
+        updateSubmitButton();
+    }
+
+    function updateFilesList() {
+        if (filesArray.length === 0) {
+            selectedFiles.style.display = 'none';
+            return;
+        }
+
+        selectedFiles.style.display = 'block';
+        filesList.innerHTML = '';
+
+        filesArray.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            
+            const fileIcon = getFileIcon(file.name);
+            const fileSize = formatFileSize(file.size);
+            
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <span class="file-icon">${fileIcon}</span>
+                    <span class="file-name me-2">${file.name}</span>
+                    <span class="file-size">(${fileSize})</span>
+                </div>
+                <button type="button" class="remove-file" onclick="removeFile(${index})" title="Remove file">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            filesList.appendChild(fileItem);
+        });
+    }
+
+    function getFileIcon(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const iconMap = {
+            'js': '<i class="fab fa-js-square text-warning"></i>',
+            'html': '<i class="fab fa-html5 text-danger"></i>',
+            'css': '<i class="fab fa-css3-alt text-primary"></i>',
+            'py': '<i class="fab fa-python text-info"></i>',
+            'java': '<i class="fab fa-java text-danger"></i>',
+            'cpp': '<i class="fas fa-code text-primary"></i>',
+            'c': '<i class="fas fa-code text-primary"></i>',
+            'php': '<i class="fab fa-php text-primary"></i>',
+            'rb': '<i class="fas fa-gem text-danger"></i>',
+            'go': '<i class="fas fa-code text-info"></i>',
+            'rs': '<i class="fas fa-code text-warning"></i>',
+            'txt': '<i class="fas fa-file-alt text-muted"></i>',
+            'md': '<i class="fab fa-markdown text-dark"></i>',
+            'json': '<i class="fas fa-code text-warning"></i>',
+            'xml': '<i class="fas fa-code text-success"></i>',
+            'yml': '<i class="fas fa-code text-info"></i>',
+            'yaml': '<i class="fas fa-code text-info"></i>',
+            'png': '<i class="fas fa-image text-success"></i>',
+            'jpg': '<i class="fas fa-image text-success"></i>',
+            'jpeg': '<i class="fas fa-image text-success"></i>',
+            'gif': '<i class="fas fa-image text-success"></i>',
+            'svg': '<i class="fas fa-image text-primary"></i>',
+            'pdf': '<i class="fas fa-file-pdf text-danger"></i>',
+            'doc': '<i class="fas fa-file-word text-primary"></i>',
+            'docx': '<i class="fas fa-file-word text-primary"></i>',
+            'zip': '<i class="fas fa-file-archive text-warning"></i>',
+            'tar': '<i class="fas fa-file-archive text-warning"></i>',
+            'gz': '<i class="fas fa-file-archive text-warning"></i>'
+        };
+        
+        return iconMap[ext] || '<i class="fas fa-file text-muted"></i>';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function updateSubmitButton() {
+        submitBtn.disabled = filesArray.length === 0;
+    }
+
+    // Make removeFile function global
+    window.removeFile = function(index) {
+        filesArray.splice(index, 1);
+        updateFilesList();
+        updateSubmitButton();
+        
+        // Update the file input
+        const dt = new DataTransfer();
+        filesArray.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+    };
+
+    // Form submission handling
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        if (filesArray.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one file to upload.');
+            return false;
+        }
+
+        // Update the file input with current files array
+        const dt = new DataTransfer();
+        filesArray.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+
+        // Show loading state
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
+        submitBtn.disabled = true;
+    });
+
+    // Initialize
+    updateSubmitButton();
+});
+</script>
+{% endblock %}

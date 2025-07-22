@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}{{ file_path }} - {{ repo.name }} - MiniGitHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- File Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <div class="d-flex align-items-center justify-content-between flex-wrap">
+        <div class="d-flex align-items-center mb-2 mb-md-0">
+          <i class="fas fa-file-alt text-muted me-2"></i>
+          <nav style="--bs-breadcrumb-divider: '/';">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item">
+                <a href="{{ url_for('dashboard') }}" class="text-decoration-none">{{ repo.owner.username }}</a>
+              </li>
+              <li class="breadcrumb-item">
+                <a href="{{ url_for('view', repo_id=repo.id) }}" class="text-decoration-none">{{ repo.name }}</a>
+              </li>
+              {% set path_parts = file_path.split('/') %}
+              {% for part in path_parts[:-1] %}
+                <li class="breadcrumb-item">
+                  <a href="{{ url_for('view_file', repo_id=repo.id, path='/'.join(path_parts[:loop.index])) }}" 
+                     class="text-decoration-none">{{ part }}</a>
+                </li>
+              {% endfor %}
+              <li class="breadcrumb-item active fw-bold">{{ path_parts[-1] }}</li>
+            </ol>
+          </nav>
+        </div>
+        
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard()">
+            <i class="fas fa-copy me-1"></i>Copy
+          </button>
+          <a href="{{ url_for('view_file', repo_id=repo.id, path='/'.join(file_path.split('/')[:-1]) if '/' in file_path else '') }}" 
+             class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to Files
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- File Stats -->
+  <div class="row mb-3">
+    <div class="col">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body py-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-4 text-muted small">
+              <div>
+                <i class="fas fa-file me-1"></i>
+                <span class="fw-semibold">{{ file_size }}</span> bytes
+              </div>
+              <div>
+                <i class="fas fa-code me-1"></i>
+                <span class="fw-semibold">{{ line_count }}</span> lines
+              </div>
+              {% if file_extension %}
+              <div>
+                <i class="fas fa-tag me-1"></i>
+                <span class="fw-semibold">{{ file_extension.upper() }}</span> file
+              </div>
+              {% endif %}
+            </div>
+            
+            <div class="text-muted small">
+              Last modified by <strong>{{ last_commit.author.name if last_commit else 'Unknown' }}</strong>
+              {% if last_commit %}
+              on {{ last_commit.committed_datetime.strftime('%B %d, %Y') }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- File Content -->
+  <div class="row">
+    <div class="col">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light border-bottom-0 py-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <h6 class="mb-0 fw-semibold">
+              <i class="fas fa-file-code me-2 text-primary"></i>{{ file_path.split('/')[-1] }}
+            </h6>
+            {% if is_text_file %}
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="view-mode" id="code-view" autocomplete="off" checked>
+              <label class="btn btn-outline-secondary" for="code-view">
+                <i class="fas fa-code me-1"></i>Code
+              </label>
+              
+              <input type="radio" class="btn-check" name="view-mode" id="raw-view" autocomplete="off">
+              <label class="btn btn-outline-secondary" for="raw-view">
+                <i class="fas fa-file-alt me-1"></i>Raw
+              </label>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          {% if is_text_file %}
+            {% if is_markdown %}
+              <!-- Markdown Rendered View -->
+              <div id="markdown-content" class="p-4">
+                <div class="markdown-body">
+                  {{ rendered_content | safe }}
+                </div>
+              </div>
+            {% else %}
+              <!-- Code View -->
+              <div id="code-content">
+                <pre class="mb-0"><code class="language-{{ file_extension or 'text' }}" id="file-content">{{ file_content }}</code></pre>
+              </div>
+            {% endif %}
+            
+            <!-- Raw View (Hidden by default) -->
+            <div id="raw-content" style="display: none;">
+              <pre class="mb-0 p-3"><code>{{ file_content }}</code></pre>
+            </div>
+          {% elif is_image %}
+            <!-- Image View -->
+            <div class="text-center p-4">
+              <img src="data:image/{{ file_extension }};base64,{{ file_content }}" 
+                   class="img-fluid rounded shadow-sm" 
+                   alt="{{ file_path.split('/')[-1] }}"
+                   style="max-height: 600px;">
+            </div>
+          {% else %}
+            <!-- Binary File -->
+            <div class="text-center p-5 text-muted">
+              <i class="fas fa-file fa-4x mb-3 opacity-50"></i>
+              <h5>Binary File</h5>
+              <p class="mb-3">This file cannot be displayed in the browser.</p>
+              <a href="{{ url_for('download_file', repo_id=repo.id, path=file_path) }}" 
+                 class="btn btn-primary">
+                <i class="fas fa-download me-2"></i>Download File
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include Highlight.js for syntax highlighting -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize syntax highlighting
+  hljs.highlightAll();
+  
+  // Add line numbers
+  addLineNumbers();
+  
+  // Handle view mode toggle
+  const codeViewBtn = document.getElementById('code-view');
+  const rawViewBtn = document.getElementById('raw-view');
+  const codeContent = document.getElementById('code-content');
+  const rawContent = document.getElementById('raw-content');
+  
+  if (codeViewBtn && rawViewBtn) {
+    codeViewBtn.addEventListener('change', function() {
+      if (this.checked) {
+        codeContent.style.display = 'block';
+        rawContent.style.display = 'none';
+      }
+    });
+    
+    rawViewBtn.addEventListener('change', function() {
+      if (this.checked) {
+        codeContent.style.display = 'none';
+        rawContent.style.display = 'block';
+      }
+    });
+  }
+});
+
+function addLineNumbers() {
+  const codeBlock = document.querySelector('#file-content');
+  if (!codeBlock) return;
+  
+  const lines = codeBlock.textContent.split('\n');
+  const lineNumbers = lines.map((_, index) => `<span class="line-number">${index + 1}</span>`).join('');
+  
+  const container = codeBlock.parentElement;
+  container.innerHTML = `
+    <div class="code-container">
+      <div class="line-numbers">${lineNumbers}</div>
+      <div class="code-content">
+        <code class="language-{{ file_extension or 'text' }}">${codeBlock.innerHTML}</code>
+      </div>
+    </div>
+  `;
+}
+
+function copyToClipboard() {
+  const fileContent = document.getElementById('file-content');
+  if (fileContent) {
+    navigator.clipboard.writeText(fileContent.textContent).then(function() {
+      // Show success message
+      const btn = event.target.closest('button');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-check me-1"></i>Copied!';
+      btn.classList.remove('btn-outline-secondary');
+      btn.classList.add('btn-success');
+      
+      setTimeout(function() {
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-secondary');
+      }, 2000);
+    });
+  }
+}
+</script>
+
+<style>
+.code-container {
+  display: flex;
+  font-family: 'SFMono-Regular', 'Monaco', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.line-numbers {
+  background-color: #f6f8fa;
+  color: #656d76;
+  padding: 10px 8px;
+  text-align: right;
+  user-select: none;
+  min-width: 50px;
+  border-right: 1px solid #d1d9e0;
+}
+
+.line-number {
+  display: block;
+  line-height: 1.45;
+}
+
+.code-content {
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+}
+
+.code-content code {
+  background: none !important;
+  padding: 0 !important;
+  white-space: pre;
+}
+
+.markdown-body {
+  max-width: none;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.markdown-body h1 {
+  font-size: 2em;
+  border-bottom: 1px solid #d1d9e0;
+  padding-bottom: 0.3em;
+}
+
+.markdown-body h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid #d1d9e0;
+  padding-bottom: 0.3em;
+}
+
+.markdown-body p {
+  margin-bottom: 16px;
+}
+
+.markdown-body code {
+  background-color: rgba(175, 184, 193, 0.2);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-size: 85%;
+}
+
+.markdown-body pre {
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+}
+
+.markdown-body blockquote {
+  border-left: 0.25em solid #d1d9e0;
+  padding-left: 1em;
+  margin-left: 0;
+  color: #656d76;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 2em;
+  margin-bottom: 16px;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #d1d9e0;
+  padding: 6px 13px;
+}
+
+.markdown-body th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+</style>
+{% endblock %}

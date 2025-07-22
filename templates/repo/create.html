@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Create Repository - MiniGitHub{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Create a New Repository
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label fw-bold") }}
+                            {{ form.name(class="form-control", placeholder="my-awesome-project") }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Great repository names are short and memorable. Need inspiration? How about 
+                                <span class="text-primary">fantastic-octo-disco</span>?
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label fw-bold") }}
+                            {{ form.description(class="form-control", rows="3", placeholder="A brief description of your project...") }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Optional. Help others understand what your project is about.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Repository Visibility</label>
+                            <div class="card border-0 bg-light p-3">
+                                <div class="form-check">
+                                    {{ form.is_private(class="form-check-input", id="public") }}
+                                    <label class="form-check-label" for="public">
+                                        <i class="fas fa-globe text-success me-2"></i>
+                                        <strong>Public</strong>
+                                    </label>
+                                    <div class="form-text ms-4">
+                                        Anyone on the internet can see this repository. You choose who can commit.
+                                    </div>
+                                </div>
+                                <hr class="my-3">
+                                <div class="form-check">
+                                    <input type="radio" name="is_private" value="true" class="form-check-input" id="private">
+                                    <label class="form-check-label" for="private">
+                                        <i class="fas fa-lock text-warning me-2"></i>
+                                        <strong>Private</strong>
+                                    </label>
+                                    <div class="form-text ms-4">
+                                        You choose who can see and commit to this repository.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.initialize_readme(class="form-check-input") }}
+                                {{ form.initialize_readme.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-text ms-4">
+                                This will set up a README.md file for your repository.
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus me-1"></i>Create Repository
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Repository naming guidelines -->
+            <div class="card mt-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Repository Naming Guidelines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Use lowercase letters, numbers, and hyphens</li>
+                        <li>Start with a letter or number</li>
+                        <li>Keep it short and memorable</li>
+                        <li>Avoid special characters and spaces</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Repository name validation
+document.getElementById('name').addEventListener('input', function(e) {
+    const value = e.target.value;
+    const isValid = /^[a-zA-Z0-9][a-zA-Z0-9-]*$/.test(value);
+    
+    if (value && !isValid) {
+        e.target.setCustomValidity('Repository name must start with a letter or number and contain only letters, numbers, and hyphens.');
+    } else {
+        e.target.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %}
